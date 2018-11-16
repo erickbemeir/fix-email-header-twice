@@ -160,15 +160,38 @@ class TransportBuilder
 
     /**
      * Set mail from address
+     * @deprecated This function sets the from address for the first store only.
+     * new function setFromByStore introduced to allow setting of from address
+     * based on store.
+     * @see setFromByStore()
      *
      * @param string|array $from
      * @return $this
      */
     public function setFrom($from)
     {
-        $result = $this->_senderResolver->resolve($from);
+        return $this->setFromByStore($from, null);
+    }
+
+    /**
+     * Set mail from address by store
+     *
+     * @param string|array $from
+     * @param string|int $store
+     * @return $this
+     */
+    public function setFromByStore($from, $store = null)
+    {
+        $result = $this->_senderResolver->resolve($from, $store);
+
         if ($this->message->getFrom()) {
+            $this->message->clearDate();
             $this->message->clearFrom();
+            $this->message->clearMessageId();
+            $this->message->clearRecipients();
+            $this->message->clearReplyTo();
+            $this->message->clearReturnPath();
+            $this->message->clearSubject();
         }
         $this->message->setFrom($result['email'], $result['name']);
         return $this;
